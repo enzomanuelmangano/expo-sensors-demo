@@ -40,7 +40,10 @@ const App = () => {
   // });
   const rotationGravity = useAnimatedSensor(SensorType.GRAVITY, {
     interval: 20,
-    adjustToInterfaceOrientation: true,
+  });
+
+  const rotation = useAnimatedSensor(SensorType.ROTATION, {
+    interval: 20,
   });
 
   // const animatedStyle = useAnimatedStyle(() => {
@@ -71,6 +74,7 @@ const App = () => {
 
   const rotateX = useDerivedValue(() => {
     const { z } = rotationGravity.sensor.value;
+    console.log(rotationGravity.sensor.value);
 
     return interpolate(
       z,
@@ -81,11 +85,11 @@ const App = () => {
   });
 
   const rotateY = useDerivedValue(() => {
-    const { x } = rotationGravity.sensor.value;
+    const { roll } = rotation.sensor.value;
 
     return interpolate(
-      x,
-      [-5, 0, 5],
+      roll,
+      [-1, 0, 1],
       [Math.PI / 8, 0, -Math.PI / 8],
       Extrapolation.CLAMP,
     );
