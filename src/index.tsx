@@ -1,91 +1,44 @@
 import { Dimensions, StyleSheet, View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import Animated, {
+import {
   useAnimatedSensor,
   SensorType,
-  useAnimatedStyle,
   interpolate,
   Extrapolation,
   useDerivedValue,
 } from 'react-native-reanimated';
 import {
-  BackdropBlur,
   Blur,
-  BlurMask,
   Canvas,
   Fill,
   Group,
   LinearGradient,
-  Oval,
   RadialGradient,
-  Rect,
   RoundedRect,
   Shadow,
   vec,
 } from '@shopify/react-native-skia';
-import { useMemo } from 'react';
+import { useCallback } from 'react';
+
+import { ReactNativeLogo } from './react-logo';
 
 const CanvasSize = {
   width: 500,
   height: 500,
 };
 
+const CanvasCenter = vec(CanvasSize.width / 2, CanvasSize.height / 2);
+
 const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
 
 const SquareSize = 170;
+
 const App = () => {
-  // const rotation = useAnimatedSensor(SensorType.ROTATION, {
-  //   interval: 20,
-  //   adjustToInterfaceOrientation: false,
-  // });
-  const rotationGravity = useAnimatedSensor(SensorType.GRAVITY, {
+  const deviceRotation = useAnimatedSensor(SensorType.ROTATION, {
     interval: 20,
-  });
-
-  const rotation = useAnimatedSensor(SensorType.ROTATION, {
-    interval: 20,
-  });
-
-  // const animatedStyle = useAnimatedStyle(() => {
-  //   const { z, x } = rotationGravity.sensor.value;
-
-  //   const rotateX = interpolate(
-  //     z,
-  //     [-10, -6, -1],
-  //     [-25, 0, 25],
-  //     Extrapolation.CLAMP,
-  //   );
-
-  //   const rotateY = interpolate(
-  //     x,
-  //     [-5, 0, 5],
-  //     [25, 0, -25],
-  //     Extrapolation.CLAMP,
-  //   );
-
-  //   return {
-  //     transform: [
-  //       { perspective: 100 },
-  //       { rotateX: `${rotateX}deg` },
-  //       { rotateY: `${rotateY}deg` },
-  //     ],
-  //   };
-  // });
-
-  const rotateX = useDerivedValue(() => {
-    const { z } = rotationGravity.sensor.value;
-    console.log(rotationGravity.sensor.value);
-
-    return interpolate(
-      z,
-      [-10, -6, -1],
-      [-Math.PI / 8, 0, Math.PI / 8],
-      Extrapolation.CLAMP,
-    );
   });
 
   const rotateY = useDerivedValue(() => {
-    const { roll } = rotation.sensor.value;
+    const { roll } = deviceRotation.sensor.value;
 
     return interpolate(
       roll,
@@ -95,11 +48,26 @@ const App = () => {
     );
   });
 
+  const rotationGravity = useAnimatedSensor(SensorType.GRAVITY, {
+    interval: 20,
+  });
+
+  const rotateX = useDerivedValue(() => {
+    const { z } = rotationGravity.sensor.value;
+
+    return interpolate(
+      z,
+      [-10, -6, -1],
+      [-Math.PI / 8, 0, Math.PI / 8],
+      Extrapolation.CLAMP,
+    );
+  });
+
   const rTransform = useDerivedValue(() => {
     return [
       { perspective: 200 },
-      { rotateX: rotateX.value },
       { rotateY: rotateY.value },
+      { rotateX: rotateX.value },
     ];
   });
 
@@ -116,61 +84,62 @@ const App = () => {
     return interpolate(
       rotateX.value,
       [-Math.PI / 8, 0, Math.PI / 8],
-      [7, 0, 10], // Exception instead of (-10 use 7)
+      // Exception instead of (-10 use 7) that's because the "light source" is on the top
+      [7, 0, 10],
       Extrapolation.CLAMP,
     );
   });
 
+  const GoodOldSquare = useCallback(
+    ({ children }: { children?: React.ReactNode }) => {
+      return (
+        <RoundedRect
+          x={CanvasSize.width / 2 - SquareSize / 2}
+          y={CanvasSize.height / 2 - SquareSize / 2}
+          width={SquareSize}
+          height={SquareSize}
+          color="#101010"
+          r={35}>
+          {children}
+        </RoundedRect>
+      );
+    },
+    [],
+  );
+
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
+    <View style={styles.fill}>
       <Canvas style={StyleSheet.absoluteFill}>
-        <Fill color={'red'}>
+        <Fill>
           <RadialGradient
             c={vec(windowWidth / 2, windowHeight / 2)}
-            r={windowWidth / 1.6}
+            r={windowWidth / 1.5}
             colors={['#252525', '#000000']}
           />
           <Blur blur={50} />
         </Fill>
       </Canvas>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.container}>
         <Canvas
           style={{
             height: CanvasSize.height,
             width: CanvasSize.width,
           }}>
-          <Group
-            origin={vec(CanvasSize.width / 2, CanvasSize.height / 2)}
-            transform={rTransform}>
+          <Group origin={CanvasCenter} transform={rTransform}>
             <Group>
-              <RoundedRect
-                x={CanvasSize.width / 2 - SquareSize / 2}
-                y={CanvasSize.height / 2 - SquareSize / 2}
-                width={SquareSize}
-                height={SquareSize}
-                color="#101010"
-                r={35}
-              />
-              <RoundedRect
-                x={CanvasSize.width / 2 - SquareSize / 2}
-                y={CanvasSize.height / 2 - SquareSize / 2}
-                width={SquareSize}
-                height={SquareSize}
-                color="#101010"
-                r={35}>
+              <GoodOldSquare />
+              <GoodOldSquare>
                 <LinearGradient
                   start={vec(0, 0)}
                   end={vec(0, CanvasSize.height / 1.8)}
                   colors={['#2e2e2e', '#0e0e0e']}
                 />
                 <Blur blur={10} />
-              </RoundedRect>
-
-              <Shadow color="#4c4c4c" inner blur={0} dx={0} dy={1} />
+              </GoodOldSquare>
+              <Shadow color="#4c4c4c" inner blur={0} dx={0} dy={0.8} />
               <Shadow color="#000000" blur={3.5} dx={shadowDx} dy={shadowDy} />
             </Group>
-            <ReactLogoSkia />
+            <ReactNativeLogo canvasSize={CanvasSize} />
           </Group>
         </Canvas>
       </View>
@@ -178,45 +147,14 @@ const App = () => {
   );
 };
 
-const Size = 60;
-
-const ReactLogoSkia = () => {
-  const oval = useMemo(() => {
-    return (
-      <Oval
-        x={-Size}
-        y={-Size / 2.5}
-        width={Size * 2}
-        height={(Size / 2.5) * 2}
-        color="#cecece"
-        style="stroke"
-        strokeWidth={2}
-      />
-    );
-  }, []);
-  return (
-    <Group>
-      <Group
-        transform={[
-          {
-            translateX: CanvasSize.width / 2,
-          },
-          { translateY: CanvasSize.height / 2 },
-        ]}>
-        {oval}
-        <Group transform={[{ rotate: Math.PI / 3 }]}>{oval}</Group>
-        <Group transform={[{ rotate: (Math.PI * 2) / 3 }]}>{oval}</Group>
-      </Group>
-      <BlurMask blur={3} style="solid" />
-    </Group>
-  );
-};
 const styles = StyleSheet.create({
+  fill: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    // backgroundColor: 'white',
-    // alignItems: 'center',
-    // justifyContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
