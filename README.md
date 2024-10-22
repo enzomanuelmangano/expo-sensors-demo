@@ -4,6 +4,10 @@ This project demonstrates a 3D logo effect using React Native and Skia, inspired
 
 https://github.com/user-attachments/assets/142e733b-5b97-42f9-9f8d-b5aa2f2360e0
 
+## Written article 
+
+You might want to check out the detailed tutorial on the Expo Blog: [How to bring your React Native apps to life using sensors](https://expo.dev/blog/how-to-bring-your-react-native-apps-to-life-using-sensors)
+
 ## Features
 
 - 3D logo effect with realistic shadows
