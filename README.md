@@ -2,6 +2,8 @@
 
 This project demonstrates a 3D logo effect using React Native and Skia, inspired by Linear's app welcome screen. It showcases the power of React Native Skia for creating complex animations and 3D-like effects on mobile devices.
 
+https://github.com/user-attachments/assets/142e733b-5b97-42f9-9f8d-b5aa2f2360e0
+
 ## Features
 
 - 3D logo effect with realistic shadows
